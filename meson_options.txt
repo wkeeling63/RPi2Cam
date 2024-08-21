@@ -1,0 +1,10 @@
+option('enable_libav',
+        type : 'boolean',
+        value : true,
+        description : 'Enable the libav encoder for video/audio capture')
+
+option('neon_flags',
+        type : 'combo',
+        choices: ['arm64', 'armv8-neon', 'auto'],
+        value : 'auto',
+        description : 'User selectable arm-neon optimisation flags')
