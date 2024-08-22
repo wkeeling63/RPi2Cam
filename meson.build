@@ -55,7 +55,7 @@ rpi2cam_app = library(
 )
 
 # Install a symlink to the old library name for legacy purposes.
-install_symlink('libcamera_app.so',
+install_symlink('lib_rpi2cam.so',
                 install_dir: get_option('libdir'),
                 pointing_to: 'rpi2cam_app.so')
 

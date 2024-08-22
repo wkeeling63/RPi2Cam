@@ -696,11 +696,11 @@ void RPi2CamEncoder::encode(AVPacket *pkt, unsigned int stream_id)
 					av_packet_rescale_ts(cp_pkt, codec_ctx_[stream_id]->time_base, 
 						fmt_ptr->streams[s_ix]->time_base);  
 						
-					std::scoped_lock<std::mutex> lock(output_mutex_);
+					{std::scoped_lock<std::mutex> lock(output_mutex_);
 					// cp_pkt is now blank (av_interleaved_write_frame() takes ownership of
 					// its contents and resets pkt), so that no unreferencing is necessary.
 					// This would be different if one used av_write_frame().
-					ret = av_interleaved_write_frame(fmt_ptr, cp_pkt);
+					ret = av_interleaved_write_frame(fmt_ptr, cp_pkt);}
 					if (ret < 0)
 					{
 						char err[AV_ERROR_MAX_STRING_SIZE];
