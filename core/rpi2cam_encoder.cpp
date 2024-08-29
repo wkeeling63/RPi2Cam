@@ -420,33 +420,18 @@ void RPi2CamEncoder::initAudioCodec(Options const *options)
 void RPi2CamEncoder::StartEncoder()
 {
 //	fprintf(stdout, "%s:%s:%d \n", __FILE__, __PRETTY_FUNCTION__, __LINE__);
-
-/*   StreamInfo info;
-// check camera selected and overlay and make sure all streams to be encoded have info	WEK update for stream_selected
-	if (options_->multi_cam)
-	{
-		info = GetCameraStreamInfo(Camera0);
-		if (!info.width || !info.height || !info.stride)
-			throw std::runtime_error("camera 0 steam is not configured");
-		info = GetCameraStreamInfo(Camera1);
-		if (!info.width || !info.height || !info.stride)
-			throw std::runtime_error("camera 1 steam is not configured");
-	}
-	else
-	{
-		info = GetCameraStreamInfo(options_->camera);
-		if (!info.width || !info.height || !info.stride)
-			throw std::runtime_error("selected camera stream is not configured");
-	} */
 	std::map< int, std::string> type_table =
 		{ { 0, "Camera O" },
 			{ 1, "Camera 1"},
 			{ 2, "Overlay" } };
 	for (int i = 0; i < 3; i++)
 	{
-		StreamInfo info = GetCameraStreamInfo((i==2 ? options_->overlay_main : i));
-		if (!info.width || !info.height || !info.stride)
-			throw std::runtime_error( type_table[i] +" steam is not configured");
+		if (options_->stream_selected[i])
+		{
+			StreamInfo info = GetCameraStreamInfo((i==2 ? options_->overlay_main : i));
+			if (!info.width || !info.height || !info.stride)
+				throw std::runtime_error( type_table[i] +" steam is not configured");
+		}
 	}
 
 	avdevice_register_all();
@@ -519,6 +504,12 @@ void RPi2CamEncoder::StopEncoder()
 	LOG(2, "libav: codec closed");
 } 
 
+void RPi2CamEncoder::AbortEncoder() 
+{	
+	abort_audio_ = false;
+	abort_video_ = false;
+	LOG(2, "Aborting encode");
+}
 void RPi2CamEncoder::EncodeBuffer(CompletedRequestPtr &completed_request)
 {
 //	fprintf(stdout, "%s:%s:%d \n", __FILE__, __PRETTY_FUNCTION__, __LINE__);

@@ -1,0 +1,30 @@
+/dts-v1/;
+/plugin/;
+
+/{
+   compatible = "brcm,bcm2708";
+   fragment@0 {
+      target = <&gpio>;
+      __overlay__ {
+         racecam_pins: racecam_pins {
+            brcm,pins =      <12 13>;
+            brcm,function =  <0  1>; /* in on 12 and out on 13*/
+            brcm,pull =      <2  0>; /* pull up on 12 and none on 13*/
+         };
+      };
+   }; 
+   
+   fragment@1 {
+	target-path = "/";
+		__overlay__ {
+			racecam: racecam {
+				compatible = "racecam";
+				status = "okay"; 
+				pinctrl-names = "default"; 
+				pinctrl-0 = <&racecam_pins>; 
+				switch-gpios = <&gpio 12 1>;
+				status-led-gpios = <&gpio 13 0>;
+			};
+		};
+	};
+ };

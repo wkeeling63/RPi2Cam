@@ -373,7 +373,6 @@ struct Options
 	std::vector<std::string> denoise_v;
 	std::string tuning_file;
 	unsigned int camera;  
-	bool multi_cam = false;
 	std::vector<std::string> mode_string_v;  
 	Mode mode_a[MAX_CAMS]; 
 	std::vector<unsigned int> buffer_count_v;

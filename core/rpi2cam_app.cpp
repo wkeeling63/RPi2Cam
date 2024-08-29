@@ -159,9 +159,8 @@ void RPi2CamApp::OpenCamera()
 	if (cameras.size() == 0)
 		throw std::runtime_error("no cameras available");
 
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)  
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		int cam = (options_->multi_cam) ? i : options_->camera;
 		std::string const &cam_id = cameras[cam]->id();
 		camera_[cam] = camera_manager_->get(cam_id);
 
@@ -194,7 +193,8 @@ void RPi2CamApp::OpenCamera()
 			for (const auto &size : formats.sizes(pix))
 			{
 				double framerate = 0;
-				if (options_->framerate_a[i])
+//				if (options_->framerate_a[i])
+				if (options_->framerate_a[cam])
 				{
 					SensorMode sensorMode(size, pix, 0);
 					config->at(0).size = size;
@@ -223,10 +223,8 @@ void RPi2CamApp::OpenCamera()
 void RPi2CamApp::CloseCamera()
 {
 //	fprintf(stdout, "%s:%s:%d \n", __FILE__, __PRETTY_FUNCTION__, __LINE__);
-
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		int cam = (options_->multi_cam) ? i : options_->camera;
 		if (camera_acquired_[cam])
 			camera_[cam]->release();
 		camera_acquired_[cam] = false;
@@ -299,9 +297,8 @@ void RPi2CamApp::ConfigureVideo()
 
 	StreamRoles stream_roles = { StreamRole::VideoRecording };
 
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		int cam = (options_->multi_cam) ? i : options_->camera;
 		configuration_[cam] = camera_[cam]->generateConfiguration(stream_roles);
 		if (!configuration_[cam])
 			throw std::runtime_error("failed to generate video configuration");
@@ -357,10 +354,10 @@ void RPi2CamApp::Teardown()
 	}
 	mapped_buffers_.clear();
 
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		configuration_[i].reset();
-		frame_buffers_[i].clear(); 
+		configuration_[cam].reset();
+		frame_buffers_[cam].clear();  
 	}
 	streams_.clear();
 }
@@ -369,9 +366,8 @@ void RPi2CamApp::StartCamera()
 {
 //	fprintf(stdout, "%s:%s:%d \n", __FILE__, __PRETTY_FUNCTION__, __LINE__);
 	// This makes all the Request objects that we shall need.
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		int cam = (options_->multi_cam) ? i : options_->camera;
 		makeRequests(cam);
 
 		if (!controls_[cam].get(controls::ScalerCrop) && options_->roi_width_a[cam] != 0 && options_->roi_height_a[cam] != 0)
@@ -516,9 +512,8 @@ void RPi2CamApp::StartCamera()
 void RPi2CamApp::StopCamera()
 {
 //	fprintf(stdout, "%s:%s:%d \n", __FILE__, __PRETTY_FUNCTION__, __LINE__);
-	for (unsigned int i = 0; i < (options_->multi_cam ? 2 : 1); i++)
+	for (int cam = (options_->camera == 1) ? 1 : 0; cam < ((options_->camera == 0) ? 1 : 2); cam++)
 	{
-		int cam = (options_->multi_cam) ? i : options_->camera;
 		{
 			// We don't want QueueRequest to run asynchronously while we stop the camera.
 			std::lock_guard<std::mutex> lock(camera_stop_mutex_);

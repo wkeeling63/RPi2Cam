@@ -56,6 +56,7 @@ public:
 	void StartEncoder();
 	void EncodeBuffer(CompletedRequestPtr &completed_request);
 	void StopEncoder(); 
+	void AbortEncoder();
 	
 protected:
 

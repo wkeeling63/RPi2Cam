@@ -341,15 +341,12 @@ bool Options::Parse(int argc, char *argv[])
 	}
 	if (file_last) throw std::runtime_error("File with no stream for: " + *--it);
 	if (stream_selected[Overlay] || (stream_selected[Camera0] && stream_selected[Camera1])) 
-	{
 		camera = 2;
-		multi_cam = true;
-	}
 	else if (stream_selected[Camera0]) camera = 0;
 	else camera = 1;
 
-	// if only one camera param given and two cameras selected dup it 	
-	if (multi_cam) 
+	// if only one camera param given and two cameras selected dup it  	
+	if (!camera == 0) 
 	{			    
 		if (width_v.size() == 1) width_v.push_back(width_v[0]);
 		if (height_v.size() == 1) height_v.push_back(height_v[0]);
@@ -379,7 +376,7 @@ bool Options::Parse(int argc, char *argv[])
 		if (flicker_period_v_.size() == 1) flicker_period_v_.push_back(flicker_period_v_[0]);
 	}
 	   		    
-	for (int i = 0; i < (multi_cam ? 2 : 1); i++)   
+	for (int i = (camera == 1) ? 1 : 0; i < ((camera == 0) ? 1 : 2); i++)   
 	{
 		if (sscanf(roi_v[i].c_str(), "%f,%f,%f,%f", &roi_x_a[i], &roi_y_a[i], &roi_width_a[i], &roi_height_a[i]) != 4)
 			roi_x_a[i] = roi_y_a[i] = roi_width_a[i] = roi_height_a[i] = 0; // don't set digital zoom
