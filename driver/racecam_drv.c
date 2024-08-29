@@ -113,7 +113,7 @@ static irqreturn_t switch_irq_handler(int irq, void *dev_id)
 	last_jiffies = current_j;
 	int sws = gpiod_get_value(rc_switch);
 	printk("RaceCam: get switch %d\n", sws); //rm
-	if (!sws)  // active when switch open, inactive when switch closed/pressed
+	if (sws)  // active when switch open, inactive when switch closed/pressed
 	{
 		sw_time = current_j;
 		sw_status = 3;  // 3 = currently pressed
