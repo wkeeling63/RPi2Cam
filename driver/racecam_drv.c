@@ -39,7 +39,6 @@ static struct task_struct *led_thread;
 static ssize_t driver_read(struct file *File, char *user_buffer, size_t count, loff_t *offs) 
 {
 	char out = (off_cnt << 5) | (on_cnt << 2) | sw_status;
-	printk("RaceCam: read value %d\n", out);   //rm
 	if (copy_to_user(user_buffer, &out, sizeof(out)) != 0) {
 		printk("RaceCam: Copy to user space failed\n");
 		return -1;
@@ -54,7 +53,7 @@ static ssize_t driver_write(struct file *File, const char *user_buffer, size_t c
 	char switch_cmd;  // if no command ned to be pass to driver can be removed
 
 	if (count != sizeof(in)) {
-		printk("RaceCam: Invalid request length\n");  // error or woarn and take one one byte??
+		printk("RaceCam: Invalid request length\n");  // error or warn and take one one byte??
 		return -1;
 	}
 	if (copy_from_user(&in, user_buffer, sizeof(in)) != 0) {
@@ -102,17 +101,13 @@ static int run_led(void *nothing)
 /* switch interupt handeler function */
 static irqreturn_t switch_irq_handler(int irq, void *dev_id)
 {
-	printk("RaceCam: Interrupt was triggered and ISR was called!\n"); //rm
 	unsigned long current_j = jiffies;
 	unsigned long diff = current_j - last_jiffies;
 	if (diff < debounce) 
-	{
-		printk("RaceCam: Interrupt was debounced!\n");  //rm
 		return IRQ_HANDLED;
-	}
+
 	last_jiffies = current_j;
 	int sws = gpiod_get_value(rc_switch);
-	printk("RaceCam: get switch %d\n", sws); //rm
 	if (sws)  // active when switch open, inactive when switch closed/pressed
 	{
 		sw_time = current_j;
@@ -121,24 +116,17 @@ static irqreturn_t switch_irq_handler(int irq, void *dev_id)
 	else
 	{
 		diff = current_j - sw_time;
-		printk("RaceCam: %lu %lu %lu\n", sw_time, diff, long_time); //rm
 		if (diff < long_time)
-		{
 			sw_status = 1; // 1 = completed short press
-		} 
 		else 
-		{
-			sw_status = 2; // 2 = completed long press
-		}
-		
+			sw_status = 2; // 2 = completed long press		
 	}
-	printk("RaceCam: status %d\n", sw_status);  //rm
 	return IRQ_HANDLED;
 }
 /* install platform driver fuction */ 
 static int platform_probe(struct platform_device *pdev) 
 {
-	printk("RaceCam: Installing\n");
+	printk("RaceCam: Installing driver\n");
 	
 	struct device *dev = &pdev->dev;
 	
@@ -194,31 +182,31 @@ static int platform_probe(struct platform_device *pdev)
 
 	/* create character device for userspace interface */
 	if( alloc_chrdev_region(&rc_device_num, 0, 1, DRIVER_NAME) < 0) {
-		printk("RaceCam driver: Device number not allocated!\n");
+		printk("RaceCam: Device number not allocated!\n");
 		goto rm_gpio;
 	}
-	printk("RaceCam driver: Device Major: %d, Minor: %d\n", 
+	printk("RaceCam: Device Major: %d, Minor: %d\n", 
 		rc_device_num >> 20, rc_device_num && 0xfffff);
 
 	if((gpio_class = class_create(DRIVER_CLASS)) == NULL) {
-		printk("RaceCam driver: Class not created!\n");
+		printk("RaceCam: Class not created!\n");
 		goto rm_dev;
 	}
 	gpio_class->devnode = gpio_devnode;
 
 	if (device_create(gpio_class, NULL, rc_device_num, NULL, DRIVER_NAME) == NULL) {
-		printk("RaceCam driver: Can not create device file!\n");
+		printk("RaceCam: Can not create device file!\n");
 		goto rm_class;
 	}
 
 	cdev_init(&char_device, &fops);
 
 	if(cdev_add(&char_device, rc_device_num, 1) == -1) {
-		printk("RaceCam driver: Registering device to kernel failed!\n");
+		printk("RaceCam: Registering device to kernel failed!\n");
 		goto unreg_dev;
 	}
 
-	printk("RaceCam driver: Installed\n");
+	printk("RaceCam: Driver installed\n");
 	return 0;
 rm_gpio:
   gpiod_put(rc_led);
@@ -240,7 +228,7 @@ static int platform_remove(struct platform_device *pdev) {
 	device_destroy(gpio_class, rc_device_num);
 	class_destroy(gpio_class);
 	unregister_chrdev_region(rc_device_num, 1); 
-	printk("RaceCam: Removed\n");
+	printk("RaceCam: Driver removed\n");
 	return 0;
 }
 

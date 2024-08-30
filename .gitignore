@@ -1,0 +1,9 @@
+*.cmd
+*.dtbo
+*.ko
+*.o
+Module.symvers
+modules.order
+racecam_drv.mod
+racecam_drv.mod.c
+
